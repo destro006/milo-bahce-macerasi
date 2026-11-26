@@ -1,0 +1,28 @@
+MİLO VE KAYIP BAHÇE IŞIĞI — PHASER 4.2.1 & GSAP 3.15.1 ETKİLEŞİMLİ EĞİTİCİ OYUN (v3.0.0)
+
+BAŞLATMA VE ÖNİZLEME:
+1) Yerel Sunucu ile (Önerilen):
+   npm start
+   (veya node server.js)
+   ardından tarayıcıda http://localhost:8780 adresini açın.
+
+2) Tek Dosya Sürüm:
+   Milo_Bahce_Macerasi_TekDosya.html (bundle.ps1 ile güncellenir)
+
+TESTLER:
+- İçerik, sözdizimi ve DOM doğrulaması:
+  npm test
+- Tam tarayıcı E2E ve 150 bölüm doğrulaması (Edge/Chrome CDP):
+  npm run test:e2e
+
+MİMARİ VE ÖZELLİKLER:
+- Tek birincil oyun motoru: Phaser 4.2.1 (WebGL/Canvas) + GSAP 3.15.1 (arayüz sinematikleri).
+- Çok parçalı hiyerarşik 2B iskelet rig sistemi (js/rigSystem.js): Milo (bakış yönlendirmeli gözler, visem ağız şekilleri, eklemli kol/el/handSocket, bacak/ayak, kuyruk/atkı gecikmeli hareketi), Sincap Pıtır, Ateş Böceği Lila, Kirpi Pof, Kuş Maviş ve Nine Fındık.
+- 5 Oyun Modu x 30 Bölüm = 150 Bölüm (Hikâyede 30 x 3 = 90 görev):
+  1. Hikâyeli Macera (S01–S30)
+  2. 123 Sayı Bahçesi (C01–C30, yalnızca rakam gösterimi)
+  3. ABC Harf Ormanı (L01–L30, Türk alfabesi I/ı ve İ/i, ağaç içinde Ğ)
+  4. İngilizce Bahçesi (E01–E30, en-US telaffuz + normal/yavaş tekrar + Türkçe anlam & yaklaşık okunuş)
+  5. Ateş Böceği Oyunu (F01–F30, görünür ateş böcekleri, yumuşak ışık darbeleri, görsel ipucu şeridi)
+- Ayrı Hikâyeli Macera / Keşif Akademisi / Serbest Keşif sekmeleri ve yetişkin doğrulamalı Ebeveyn Alanı (Kolay/Orta/Zor, ses/müzik/efekt/azaltılmış hareket).
+- Tamamen çevrimdışı yerel varlıklar ve sürüm geçişli yerel kayıt (milo-bahce-v2 -> milo-bahce-v3).

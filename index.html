@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#9edcf1">
+  <title>Milo ve Kayıp Bahçe Işığı</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="game-shell" id="gameShell" aria-label="Milo ve Kayıp Bahçe Işığı eğitici çocuk oyunu">
+    <div class="stage" id="stage">
+      <!-- Primary Phaser 4 Animated Game Mount -->
+      <div class="phaser-mount" id="phaserMount"></div>
+
+      <!-- Accessible Keyboard & Screen-Reader Mirror Layer -->
+      <div class="a11y-stage-controls" id="a11yStageControls" role="group" aria-label="Sahne nesneleri"></div>
+
+      <!-- Interactive Steamy Greenhouse Glass Canvas (optional fog wipe) -->
+      <div class="fog-layer" id="fogLayer" hidden>
+        <canvas class="fog-canvas" id="fogCanvas"></canvas>
+        <div class="fog-prompt" id="fogPrompt">
+          <span>Parmağınla veya farenle camı sil!</span>
+          <button type="button" class="mini-pill-btn" id="fogTapHelpBtn">Dokunarak Sil</button>
+        </div>
+      </div>
+
+      <!-- GSAP Chapter Ribbon Banner -->
+      <div class="chapter-banner" id="chapterBanner" hidden></div>
+
+      <!-- Floating Character Speech Bubble -->
+      <div class="speech-bubble" id="speechBubble" hidden></div>
+
+      <!-- Top HUD -->
+      <header class="topbar" id="topbar">
+        <div class="hud-left">
+          <button type="button" class="hud-btn" id="homeHubBtn" aria-label="Ana ekrana dön">
+            <span>🏠</span><span class="btn-label">Ana Ekran</span>
+          </button>
+          <button type="button" class="hud-btn" id="mapBtn" aria-label="Bölüm haritasını aç">
+            <span>🗺️</span><span class="btn-label">Harita</span>
+          </button>
+          <div class="chapter-pill" id="chapterPill">Bölüm 1 / 30</div>
+        </div>
+
+        <div class="seed-jar" id="seedJar" aria-label="Işık Tohumu Kavanozu">
+          <span class="jar-label">Işıklar</span>
+          <div class="seed-slots">
+            <span class="seed-slot" data-seed="ruby" title="Yakut Tohumu"></span>
+            <span class="seed-slot" data-seed="amber" title="Kehribar Tohumu"></span>
+            <span class="seed-slot" data-seed="sapphire" title="Safir Tohumu"></span>
+            <span class="seed-slot" data-seed="gold" title="Altın Yıldız Tohumu"></span>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <button type="button" class="hud-btn" id="wordsBtn" aria-label="Kelime çantamı aç">
+            <span>🎒</span><span class="btn-label">Kelimeler</span>
+            <span class="count-badge" id="wordsBadge">0</span>
+          </button>
+          <button type="button" class="icon-btn" id="pauseBtn" aria-label="Oyunu duraklat" title="Duraklat">⏸</button>
+          <button type="button" class="icon-btn" id="musicBtn" aria-label="Arka plan müziğini aç veya kapat" title="Müzik">🎵</button>
+          <button type="button" class="icon-btn" id="soundBtn" aria-label="Sesleri aç veya kapat" title="Ses">🔊</button>
+        </div>
+      </header>
+
+      <!-- Top-Center Compact Storybook Dialog Card -->
+      <section class="dialog-card" id="dialogCard" aria-live="polite">
+        <div class="speaker-portrait" id="speakerPortrait"></div>
+        <div class="dialog-body">
+          <div class="dialog-meta">
+            <span class="speaker-name" id="speakerName">Nine Fındık</span>
+            <span class="chapter-subtitle" id="chapterSubtitle">Fenerin sırrı</span>
+            <span class="task-step-pill" id="taskStepPill">Görev 1 / 3</span>
+          </div>
+          <p class="dialog-text" id="dialogText"></p>
+        </div>
+        <button type="button" class="replay-btn" id="replayVoiceBtn" aria-label="Yönergeyi tekrar dinle" title="Tekrar dinle">🔊</button>
+      </section>
+
+      <!-- Visual Helper Strip (Counting digits counter / Firefly pattern / Letter preview) -->
+      <div class="visual-helper-strip" id="visualHelperStrip" hidden></div>
+
+      <!-- Bottom Mission & Action Dock -->
+      <footer class="bottom-dock" id="bottomDock">
+        <div class="task-bar" id="taskBar">
+          <div class="task-main">
+            <span class="task-star">✦</span>
+            <span class="task-text" id="taskText">Görev hazırlanıyor...</span>
+          </div>
+          <div class="word-chip" id="wordChip" hidden>
+            <strong id="wordEn">apple</strong>
+            <span class="word-sep">•</span>
+            <span class="word-tr" id="wordTr">elma</span>
+            <span class="word-approx" id="wordApprox">(yaklaşık: ep-ıl)</span>
+            <button type="button" class="chip-audio" id="wordPlayBtn" aria-label="İngilizce kelimeyi dinle" title="Dinle">🔊</button>
+            <button type="button" class="chip-audio slow" id="wordSlowBtn" aria-label="İngilizce kelimeyi yavaş dinle" title="Yavaş Dinle">🐢</button>
+          </div>
+        </div>
+
+        <nav class="controls-bar" aria-label="Oyun kontrolleri">
+          <button type="button" class="ctrl-btn" id="hintBtn">💡 İpucu</button>
+          <button type="button" class="ctrl-btn" id="replayDemoBtn" hidden>✨ Tekrar İzle</button>
+          <button type="button" class="ctrl-btn" id="traceLetterBtn" hidden>✏️ Harfi Çiz</button>
+          <button type="button" class="ctrl-btn" id="slowBtn" hidden>🐢 Yavaş Dinle</button>
+          <button type="button" class="ctrl-btn primary" id="nextBtn" hidden>Devam Et →</button>
+        </nav>
+      </footer>
+
+      <!-- Gentle Toast Notification -->
+      <div class="toast-banner" id="toastBanner" role="status" aria-live="polite"></div>
+    </div>
+
+    <!-- Storybook Cover & Main Hub Overlay -->
+    <div class="overlay cover-overlay" id="coverOverlay">
+      <div class="cover-card hub-card">
+        <div class="cover-art" id="coverArt"></div>
+        <div class="cover-content">
+          <div class="cover-top-row">
+            <span class="cover-kicker">5 Yaş Türkçe Resimli Macera</span>
+            <button type="button" class="mini-pill-btn" id="openParentBtn" aria-label="Ebeveyn ayarlarını aç">⚙️ Ebeveyn</button>
+          </div>
+          <h1>Milo ve Kayıp Bahçe Işığı</h1>
+          <p>Milo, Kirpi Pof, Kuş Maviş, Sincap Pıtır ve Ateş Böceği Lila ile bahçeyi keşfet! Bölümleri oyna, yeni kelimeler öğren ve Bahçe Feneri ile Şafak Çanı’nı yeniden aydınlat.</p>
+
+          <!-- Three Main Top-Level Tabs (Preserved Architecture) -->
+          <div class="hub-tabs" role="tablist" aria-label="Oyun alanları">
+            <button type="button" class="hub-tab active" data-hub="story" role="tab" aria-selected="true">📖 Hikâyeli Macera</button>
+            <button type="button" class="hub-tab" data-hub="academy" role="tab" aria-selected="false">🎓 Keşif Akademisi</button>
+            <button type="button" class="hub-tab" data-hub="explore" role="tab" aria-selected="false">🌿 Serbest Keşif</button>
+          </div>
+
+          <div class="hub-panel" id="hubPanelStory">
+            <div class="cover-actions">
+              <button type="button" class="cover-btn primary" id="startFreshBtn">✨ Hikâyeye Başla (30 Bölüm)</button>
+              <button type="button" class="cover-btn secondary" id="continueBtn" hidden>📖 Kaldığın Yerden Devam Et</button>
+            </div>
+          </div>
+
+          <div class="hub-panel" id="hubPanelAcademy" hidden>
+            <div class="mode-grid">
+              <button type="button" class="mode-portal" data-mode="counting">
+                <strong>123 Sayı Bahçesi</strong>
+                <span>30 bölüm • Rakamlarla say ve eşleştir</span>
+              </button>
+              <button type="button" class="mode-portal" data-mode="letters">
+                <strong>ABC Harf Ormanı</strong>
+                <span>30 bölüm • Türk alfabesi (Ç Ğ I İ Ö Ş Ü)</span>
+              </button>
+              <button type="button" class="mode-portal" data-mode="english">
+                <strong>İngilizce Bahçesi</strong>
+                <span>30 bölüm • Dinle, seç ve öğren</span>
+              </button>
+              <button type="button" class="mode-portal" data-mode="firefly">
+                <strong>Ateş Böceği Oyunu</strong>
+                <span>30 bölüm • Lila’nın ışığını takip et</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="hub-panel" id="hubPanelExplore" hidden>
+            <p class="explore-note">Açtığın bahçe duraklarını baskısız, zamansız şekilde yeniden gezebilir ve nesnelere dokunarak seslerini dinleyebilirsin.</p>
+            <div class="explore-grid" id="exploreGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause Modal -->
+    <div class="overlay modal-overlay" id="pauseModal" hidden>
+      <div class="modal-card compact-card" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+        <h2 id="pauseTitle">⏸ Oyun Duraklatıldı</h2>
+        <p class="modal-sub">Milo seni burada bekliyor. İlerleme otomatik kaydedildi.</p>
+        <div class="pause-actions">
+          <button type="button" class="cover-btn primary" id="resumeBtn">▶ Devam Et</button>
+          <button type="button" class="cover-btn secondary" id="pauseReplayBtn">🔊 Yönergeyi Dinle</button>
+          <button type="button" class="cover-btn secondary" id="pauseMapBtn">🗺️ Haritaya Git</button>
+          <button type="button" class="cover-btn secondary" id="pauseHomeBtn">🏠 Ana Ekrana Dön</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Letter Tracing Modal -->
+    <div class="overlay modal-overlay" id="traceModal" hidden>
+      <div class="modal-card compact-card" role="dialog" aria-modal="true" aria-labelledby="traceTitle">
+        <div class="modal-head">
+          <div>
+            <h2 id="traceTitle">✏️ Harfi Çiz</h2>
+            <p class="modal-sub">Geniş çizgi üzerinden parmağınla veya farenle geç!</p>
+          </div>
+          <button type="button" class="close-btn" id="closeTraceBtn" aria-label="Kapat">✕</button>
+        </div>
+        <div class="trace-box">
+          <canvas id="traceCanvas" width="280" height="240"></canvas>
+        </div>
+        <div class="pause-actions">
+          <button type="button" class="cover-btn secondary" id="clearTraceBtn">Temizle</button>
+          <button type="button" class="cover-btn primary" id="doneTraceBtn">Harika! Tamam</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parent Settings Modal (Protected with simple adult check) -->
+    <div class="overlay modal-overlay" id="parentModal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="parentTitle">
+        <div class="modal-head">
+          <div>
+            <h2 id="parentTitle">⚙️ Ebeveyn Alanı</h2>
+            <p class="modal-sub">Tüm ayarlar cihazda yerel saklanır; hiçbir çocuk verisi dışarı gönderilmez.</p>
+          </div>
+          <button type="button" class="close-btn" id="closeParentBtn" aria-label="Kapat">✕</button>
+        </div>
+
+        <div class="parent-gate" id="parentGate">
+          <p>Yetişkin doğrulaması: <strong>3 + 4 = ?</strong></p>
+          <div class="gate-choices">
+            <button type="button" class="mini-pill-btn gate-opt" data-ans="5">5</button>
+            <button type="button" class="mini-pill-btn gate-opt" data-ans="7">7</button>
+            <button type="button" class="mini-pill-btn gate-opt" data-ans="9">9</button>
+          </div>
+        </div>
+
+        <div class="parent-settings" id="parentSettingsBody" hidden>
+          <div class="setting-row">
+            <strong>Zorluk Seviyesi</strong>
+            <div class="diff-pills">
+              <button type="button" class="mini-pill-btn diff-btn" data-diff="Kolay">Kolay (2–3 seçenek)</button>
+              <button type="button" class="mini-pill-btn diff-btn" data-diff="Orta">Orta (3–4 seçenek)</button>
+              <button type="button" class="mini-pill-btn diff-btn" data-diff="Zor">Zor (4–6 seçenek)</button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <strong>Ses ve Hareket Tercihleri</strong>
+            <div class="toggle-grid">
+              <label><input type="checkbox" id="setVoiceChk" checked> Sesli Anlatım (Türkçe Kadın / İngilizce)</label>
+              <label><input type="checkbox" id="setMusicChk" checked> Arka Plan Müziği</label>
+              <label><input type="checkbox" id="setSfxChk" checked> Yumuşak Efekt Sesleri</label>
+              <label><input type="checkbox" id="setReducedChk"> Azaltılmış Hareket (Reduced Motion)</label>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <strong>Yerel İlerleme Özeti</strong>
+            <p class="modal-sub" id="parentSummaryText">0 / 150 bölüm tamamlandı.</p>
+          </div>
+
+          <div class="setting-row danger-row">
+            <button type="button" class="mini-pill-btn" id="resetConfirmBtn">🗑️ Tüm İlerlemeyi Sıfırla</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kelime Çantam Modal -->
+    <div class="overlay modal-overlay" id="wordsModal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="wordsModalTitle">
+        <div class="modal-head">
+          <div>
+            <h2 id="wordsModalTitle">🎒 Milo’nun Kelime Çantası</h2>
+            <p class="modal-sub">Kartlara dokun ve kelimeleri İngilizce &amp; Türkçe dinle!</p>
+          </div>
+          <button type="button" class="close-btn" id="closeWordsBtn" aria-label="Kapat">✕</button>
+        </div>
+        <div class="modal-scroll">
+          <h3 class="section-label">Öğrendiğin Kelimeler</h3>
+          <div class="words-grid" id="wordsGrid"></div>
+          <h3 class="section-label">Bahçe Arkadaşların</h3>
+          <div class="friends-grid" id="friendsGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bahçe Haritası Modal -->
+    <div class="overlay modal-overlay" id="mapModal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle">
+        <div class="modal-head">
+          <div>
+            <h2 id="mapModalTitle">🗺️ Işıklı Bahçe Haritası</h2>
+            <p class="modal-sub">Açılan bölümlere veya oyun modlarına dokunarak istediğin durağa gidebilirsin.</p>
+          </div>
+          <button type="button" class="close-btn" id="closeMapBtn" aria-label="Kapat">✕</button>
+        </div>
+        <div class="map-mode-tabs" id="mapModeTabs">
+          <button type="button" class="mini-pill-btn active" data-mapmode="story">Hikâye (30)</button>
+          <button type="button" class="mini-pill-btn" data-mapmode="counting">Sayı (30)</button>
+          <button type="button" class="mini-pill-btn" data-mapmode="letters">Harf (30)</button>
+          <button type="button" class="mini-pill-btn" data-mapmode="english">İngilizce (30)</button>
+          <button type="button" class="mini-pill-btn" data-mapmode="firefly">Ateş Böceği (30)</button>
+        </div>
+        <div class="modal-scroll">
+          <div class="map-path" id="mapPath"></div>
+          <div class="map-footer">
+            <button type="button" class="mini-pill-btn" id="unlockAllBtn">🔓 Tüm Bölümleri Aç (Ebeveyn)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Finale Celebration Overlay -->
+    <div class="overlay modal-overlay" id="finaleOverlay" hidden>
+      <div class="modal-card finale-card" role="dialog" aria-modal="true" aria-labelledby="finaleTitle">
+        <div class="finale-badge-art" id="finaleBadgeArt"></div>
+        <span class="finale-kicker">🌟 Tebrikler Küçük Kaşif! 🌟</span>
+        <h2 id="finaleTitle">Bahçe Işığı ve Şafak Çanı Koruyucusu</h2>
+        <p class="finale-desc">Milo, Pof, Maviş, Sincap Pıtır, Lila ve Nine Fındık ile el ele verip tüm görevleri tamamladın! Bahçe yeniden ışıldıyor.</p>
+        <div class="finale-words-summary" id="finaleWordsSummary"></div>
+        <div class="finale-actions">
+          <button type="button" class="cover-btn secondary" id="exploreGardenBtn">✨ Serbest Keşfe Git</button>
+          <button type="button" class="cover-btn primary" id="playAgainBtn">↻ Hikâyeyi Tekrar Oyna</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="vendor/phaser.min.js"></script>
+  <script src="vendor/gsap.min.js"></script>
+  <script src="js/contentData.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/characters.js"></script>
+  <script src="js/spriteFactory.js"></script>
+  <script src="js/rigSystem.js"></script>
+  <script src="js/uiCinematics.js"></script>
+  <script src="js/phaserGame.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
