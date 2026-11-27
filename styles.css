@@ -1777,6 +1777,7 @@ button {
   .cover-card { max-height: 94svh; overflow-y: auto; }
   .word-approx { display: inline; font-size: 11px; }
   .visual-helper-strip { top: auto; bottom: 168px; z-index: 21; font-size: 12px; padding: 5px 10px; }
+  .stage:has(#wordChip:not([hidden])) .visual-helper-strip { display: none; }
 }
 
 body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {
