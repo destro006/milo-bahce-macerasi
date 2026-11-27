@@ -96,22 +96,25 @@
     var armL = makeArm(-36);
     bodyRoot.add(armL.shoulder);
 
-    // Torso (Green overalls + gold star pocket)
+    // Torso (Green overalls with radial shading + gold star pocket)
     var torso = scene.add.container(0, -68);
     var torsoG = createG(scene);
-    torsoG.fillStyle(0x5da459, 1); torsoG.lineStyle(3.4, 0x316035, 1);
+    torsoG.fillStyle(0x4a8c49, 1); torsoG.lineStyle(3.4, 0x2d5931, 1);
     torsoG.fillRoundedRect(-34, -30, 68, 66, 22); torsoG.strokeRoundedRect(-34, -30, 68, 66, 22);
+    // Warm sunlit chest highlight
+    torsoG.fillStyle(0x6eb567, 0.72);
+    torsoG.fillRoundedRect(-28, -26, 46, 52, 16);
     // Straps & Gold Buttons
-    torsoG.fillStyle(0x4b8e4a, 1);
+    torsoG.fillStyle(0x438242, 1); torsoG.lineStyle(2.4, 0x2d5931, 1);
     torsoG.fillRoundedRect(-25, -32, 10, 22, 4); torsoG.strokeRoundedRect(-25, -32, 10, 22, 4);
     torsoG.fillRoundedRect(15, -32, 10, 22, 4); torsoG.strokeRoundedRect(15, -32, 10, 22, 4);
-    torsoG.fillStyle(0xffd761, 1);
-    torsoG.fillCircle(-20, -17, 3.5); torsoG.fillCircle(20, -17, 3.5);
+    torsoG.fillStyle(0xffe073, 1);
+    torsoG.fillCircle(-20, -17, 3.8); torsoG.fillCircle(20, -17, 3.8);
     // Pocket & Star
     torsoG.fillStyle(0xf8cf60, 1); torsoG.lineStyle(2.6, 0xb47b21, 1);
     torsoG.fillRoundedRect(-20, -2, 40, 26, 8); torsoG.strokeRoundedRect(-20, -2, 40, 26, 8);
     torsoG.fillStyle(0xfff9db, 1);
-    torsoG.fillCircle(0, 11, 7);
+    torsoG.fillCircle(0, 11, 7.5);
     torso.add(torsoG);
     bodyRoot.add(torso);
 
@@ -152,17 +155,22 @@
     head.add([earL, earR]);
 
     var headBase = createG(scene);
-    headBase.fillStyle(0xd48e5d, 1); headBase.lineStyle(3.4, 0x754429, 1);
+    headBase.fillStyle(0xc67e4d, 1); headBase.lineStyle(3.4, 0x754429, 1);
     headBase.fillEllipse(0, 0, 88, 76); headBase.strokeEllipse(0, 0, 88, 76);
+    // Warm top-left cartoon fur highlight
+    headBase.fillStyle(0xe3a872, 0.78);
+    headBase.fillEllipse(-6, -8, 68, 52);
     // Muzzle & rosy cheeks
     headBase.fillStyle(0xf7d5b2, 1);
     headBase.fillEllipse(0, 13, 44, 28);
-    headBase.fillStyle(0xf08c80, 0.58);
+    headBase.fillStyle(0xf08c80, 0.62);
     headBase.fillEllipse(-29, 10, 16, 10);
     headBase.fillEllipse(29, 10, 16, 10);
-    // Cute Nose
+    // Cute Nose with shine
     headBase.fillStyle(0x683c2e, 1);
     headBase.fillEllipse(0, 6, 13, 8.5);
+    headBase.fillStyle(0xffffff, 0.45);
+    headBase.fillCircle(-3, 4, 2.2);
     head.add(headBase);
 
     // Eyes with independent pupils (gaze lead!) + eyelids

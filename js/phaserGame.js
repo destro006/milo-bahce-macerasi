@@ -257,113 +257,57 @@
 
     drawBackdrop(sceneId, worldChanges) {
       this.bgContainer.removeAll(true);
-      var g = this.add.graphics();
-      this.bgContainer.add(g);
       var wc = worldChanges || {};
       var isNight = sceneId === 'glade' || sceneId === 'finale' || sceneId === 'twilight';
+      var bgKey = 'bg-' + (this.textures.exists('bg-' + sceneId) ? sceneId : 'orchard');
 
-      // Sky gradient (warm painterly palette)
-      var skyTop = sceneId === 'twilight' ? 0x454a84 : sceneId === 'glade' ? 0x2a396a : sceneId === 'finale' ? (wc.lit ? 0x244075 : 0x18254a) : 0x8ad5ee;
-      var skyBot = sceneId === 'twilight' ? 0xd99a8e : sceneId === 'glade' ? 0x8b80b8 : sceneId === 'finale' ? (wc.lit ? 0x5c7ca8 : 0x334970) : 0xe5f7ec;
-      g.fillGradientStyle(skyTop, skyTop, skyBot, skyBot, 1);
-      g.fillRect(0, 0, 1280, 500);
+      // 1. High-DPI Painterly Canvas2D Backdrop
+      var bgImg = this.add.image(640, 360, bgKey);
+      this.bgContainer.add(bgImg);
 
-      // Distant background hills (depth layer 1)
-      g.fillStyle(isNight ? 0x486e63 : 0xaad991, 0.85);
-      g.fillEllipse(240, 485, 780, 240);
-      g.fillEllipse(980, 470, 820, 250);
-
-      // Midground foliage silhouettes (depth layer 2)
-      g.fillStyle(isNight ? 0x395e50 : 0x86c86e, 1);
-      g.fillEllipse(620, 515, 1380, 220);
-      g.fillStyle(isNight ? 0x2f5445 : 0x74b95a, 1);
-      g.fillRect(0, 480, 1280, 240);
-
-      // Soft traversable walking path across scene (G10)
-      g.fillStyle(isNight ? 0x8b7c65 : 0xe5cca1, 0.92);
-      g.beginPath();
-      g.moveTo(0, 540);
-      g.lineTo(1280, 540);
-      g.lineTo(1280, 625);
-      g.lineTo(0, 625);
-      g.closePath();
-      g.fillPath();
-
-      // Scene landmarks & ambient occlusion
-      if (sceneId === 'square' || sceneId === 'finale') {
-        // Nine Fındık's Cozy Cottage + Dawn Bell Arch
-        g.fillStyle(isNight ? 0xcfc1ad : 0xfff3dc, 1);
-        g.lineStyle(4, 0x8f6b4a, 1);
-        g.fillRoundedRect(58, 305, 185, 150, 14); g.strokeRoundedRect(58, 305, 185, 150, 14);
-        g.fillStyle(isNight ? 0x994f43 : 0xdf715b, 1);
-        g.fillTriangle(40, 315, 150, 222, 260, 315); g.strokeTriangle(40, 315, 150, 222, 260, 315);
-        g.fillStyle(wc.lit ? 0xffe680 : 0xffdf7a, 1);
-        g.fillRoundedRect(82, 345, 36, 36, 8); g.fillRoundedRect(182, 345, 36, 36, 8);
-        // Dawn Bell Archway (Şafak Çanı)
-        g.fillStyle(0x9a7554, 1);
-        g.fillRoundedRect(1080, 260, 14, 175, 6);
-        g.fillRoundedRect(1176, 260, 14, 175, 6);
-        g.fillRoundedRect(1070, 252, 130, 16, 8);
-        g.fillStyle(0xffd55a, 1); g.lineStyle(3, 0xa37114, 1);
-        g.fillCircle(1135, 290, 16); g.strokeCircle(1135, 290, 16);
-      } else if (sceneId === 'orchard') {
-        // Rounded handcrafted Apple Tree
-        g.fillStyle(0x96603b, 1);
-        g.fillRoundedRect(120, 310, 52, 185, 14);
-        g.fillStyle(0x4b9447, 1);
-        g.fillCircle(146, 235, 92); g.fillCircle(84, 278, 66); g.fillCircle(208, 276, 68);
-        g.fillStyle(0xeb4545, 1);
-        g.fillCircle(104, 250, 11); g.fillCircle(186, 240, 11); g.fillCircle(152, 292, 11);
-      } else if (sceneId === 'stream') {
-        // Rainbow + Stream + Stepping bridge
-        [0xff9494, 0xffca72, 0xfff085, 0x96e08b, 0x85cdf7].forEach(function (col, idx) {
-          g.lineStyle(10, col, 0.48);
-          g.beginPath(); g.arc(640, 395, 280 - idx * 13, Math.PI, 0, false); g.strokePath();
-        });
-        g.fillStyle(0x4db7ec, 0.92);
-        g.beginPath();
-        g.moveTo(520, 445); g.lineTo(660, 445); g.lineTo(820, 720); g.lineTo(420, 720);
-        g.closePath(); g.fillPath();
-        // Gentle water ripple lines
-        g.lineStyle(4, 0xd8f5ff, 0.78);
-        g.lineBetween(530, 515, 650, 515);
-        g.lineBetween(495, 595, 695, 595);
-        if (wc.bridgeOpen) {
-          g.fillStyle(0xb97b45, 1); g.lineStyle(3, 0x6b411e, 1);
-          g.fillRoundedRect(465, 540, 290, 32, 10); g.strokeRoundedRect(465, 540, 290, 32, 10);
-        }
-      } else if (sceneId === 'forest' || sceneId === 'glade') {
-        // Layered rounded woodland trees
-        [[130, 320, 0x45804f], [1110, 315, 0x3b6e49], [960, 330, 0x4b8955]].forEach(function (t) {
-          g.fillStyle(0x7c4f32, 1); g.fillRoundedRect(t[0] - 20, t[1], 40, 175, 10);
-          g.fillStyle(t[2], 1); g.fillCircle(t[0], t[1] - 45, 76); g.fillCircle(t[0] - 42, t[1] - 12, 54); g.fillCircle(t[0] + 42, t[1] - 12, 54);
-        });
-      } else if (sceneId === 'greenhouse') {
-        // Sunlit glass conservatory arches
-        g.fillStyle(0xfffbe0, 0.25);
-        g.fillTriangle(240, 85, 380, 85, 500, 560);
-        g.fillTriangle(740, 85, 880, 85, 990, 560);
-        g.lineStyle(8, 0x5d8278, 0.85);
-        g.strokeRoundedRect(85, 105, 1110, 415, 120);
-        g.lineStyle(4, 0x73988e, 0.65);
-        g.lineBetween(360, 105, 360, 485);
-        g.lineBetween(640, 105, 640, 485);
-        g.lineBetween(920, 105, 920, 485);
+      // 2. Dynamic World-Change Overlays (Dawn Bell / Lantern glow / Bridge)
+      var g = this.add.graphics();
+      this.bgContainer.add(g);
+      if (sceneId === 'finale' && wc.lit) {
+        g.fillStyle(0xffe785, 0.16);
+        g.fillCircle(1080, 360, 290);
+        g.fillCircle(640, 420, 340);
+      }
+      if (sceneId === 'stream' && wc.bridgeOpen) {
+        g.fillStyle(0xb97b45, 1); g.lineStyle(3, 0x6b411e, 1);
+        g.fillRoundedRect(460, 540, 290, 34, 10); g.strokeRoundedRect(460, 540, 290, 34, 10);
       }
 
-      // Soft sun or crescent moon
-      if (isNight) {
-        g.fillStyle(0xfff4b8, 1); g.fillCircle(1070, 130, 36);
-        g.fillStyle(skyTop, 1); g.fillCircle(1084, 122, 30);
-      } else {
-        g.fillStyle(0xffe794, 0.35); g.fillCircle(1080, 128, 60);
-        g.fillStyle(0xffd65a, 1); g.fillCircle(1080, 128, 40);
-      }
+      // 3. Drifting Clouds (Daytime) & Gentle Butterflies
+      if (!isNight && !this.reducedMotion) {
+        [[240, 128, 0.9], [690, 96, 0.72]].forEach((cl, idx) => {
+          var cSp = this.add.image(cl[0], cl[1], 'fx-cloud').setScale(cl[2]).setAlpha(0.92);
+          this.bgContainer.add(cSp);
+          this.tweens.add({
+            targets: cSp,
+            x: cl[0] + 55,
+            duration: 6200 + idx * 1800,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          });
+        });
 
-      // Foreground framing foliage corners (depth layer 3)
-      g.fillStyle(isNight ? 0x264839 : 0x4d9244, 0.88);
-      g.fillCircle(30, 700, 75); g.fillCircle(100, 720, 60);
-      g.fillCircle(1250, 700, 75); g.fillCircle(1180, 720, 60);
+        [[360, 390], [840, 360]].forEach((bf, idx) => {
+          var bSp = this.add.image(bf[0], bf[1], 'fx-butterfly').setScale(0.76 + idx * 0.12);
+          this.bgContainer.add(bSp);
+          this.tweens.add({
+            targets: bSp,
+            x: bf[0] + (idx === 0 ? 75 : -70),
+            y: bf[1] - 26,
+            angle: idx === 0 ? 8 : -8,
+            duration: 3400 + idx * 900,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          });
+        });
+      }
 
       this.ambientEmitter.setAlpha(isNight ? 0.85 : 0.42);
     }
@@ -450,6 +394,11 @@
         this.buildStandardTask(spec);
       }
 
+      if (!this.reducedMotion && this.cameras && this.cameras.main) {
+        this.cameras.main.setZoom(1.035);
+        this.cameras.main.zoomTo(1, 520, 'Sine.easeOut');
+      }
+
       this.setFsmState('awaiting_input');
       if (callbacks.onEntitiesUpdated) callbacks.onEntitiesUpdated(this.getAccessibleEntities());
     }
@@ -473,17 +422,23 @@
         var itemsInRow = row === rows - 1 ? (n - row * cols) : cols;
         var startX = centerX - ((itemsInRow - 1) * spacingX) / 2;
         var cx = startX + col * spacingX;
-        var cy = baseY + row * spacingY;
+        var arcOffset = rows === 1 ? Math.sin((idx / Math.max(1, n - 1)) * Math.PI) * -14 : 0;
+        var cy = baseY + row * spacingY + arcOffset;
 
         var cont = this.add.container(cx, cy).setDepth(22);
-        var card = this.add.graphics();
-        card.fillStyle(0x213b2f, 0.16);
-        card.fillRoundedRect(-50, -46, 100, 102, 22);
-        card.fillStyle(item.isTargetHint ? 0xfff8dc : 0xfffbf0, 0.96);
-        card.lineStyle(3.2, 0xffffff, 1);
-        card.fillRoundedRect(-52, -52, 104, 104, 22);
-        card.strokeRoundedRect(-52, -52, 104, 104, 22);
-        cont.add(card);
+        var med = this.add.image(0, 2, 'ui-medallion').setScale(0.98);
+        cont.add(med);
+
+        if (!this.reducedMotion) {
+          this.tweens.add({
+            targets: cont,
+            y: cy - 5,
+            duration: 1650 + idx * 140,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          });
+        }
 
         if (item.groupCount) {
           // Counting group cluster (digits only)
@@ -556,7 +511,7 @@
           homeX: cx,
           homeY: cy,
           container: cont,
-          cardBg: card
+          cardBg: med
         };
         cont.setData('entityRecord', rec);
         cont.setData('wasDragged', false);

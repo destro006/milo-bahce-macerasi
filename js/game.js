@@ -501,18 +501,33 @@
     if (!el.visualHelperStrip) return;
     if (spec.mode === 'counting') {
       el.visualHelperStrip.hidden = false;
+      var dotsHtml = '';
+      var maxDots = Math.min(10, spec.requiredCount);
+      for (var di = 0; di < maxDots; di++) {
+        dotsHtml += '<span class="tenframe-dot" data-dot="' + di + '"></span>';
+      }
       el.visualHelperStrip.innerHTML = '<span>Hedef sayı: <strong class="digit-pill">' + spec.requiredCount + '</strong></span>' +
+        '<span class="tenframe-row" aria-hidden="true">' + dotsHtml + '</span>' +
         '<span>Sayılan: <strong class="digit-pill" id="countProgressDigit">0</strong> / <strong class="digit-pill">' + spec.requiredCount + '</strong></span>';
     } else if (spec.mode === 'firefly') {
       el.visualHelperStrip.hidden = false;
       var dots = (spec.pattern || [spec.pulseCount || 1]).map(function (n) {
-        return '<span class="pattern-badge">' + '✦'.repeat(n) + ' (' + n + ')</span>';
+        return '<span class="pattern-badge">♪ ' + '✦'.repeat(n) + ' (' + n + ')</span>';
       }).join(' ');
-      el.visualHelperStrip.innerHTML = '<span>Işık İpucu:</span> ' + dots;
+      el.visualHelperStrip.innerHTML = '<span>Işık & Ritim İpucu:</span> ' + dots;
     } else if (spec.mode === 'letters') {
       el.visualHelperStrip.hidden = false;
-      el.visualHelperStrip.innerHTML = '<span>Hedef Harf: <strong class="digit-pill">' + spec.letter + ' / ' + spec.lowercase + '</strong></span>' +
-        '<span>Örnek: <strong>' + spec.exampleTr + '</strong></span>';
+      var wordUpper = (spec.exampleTr || '').toLocaleUpperCase('tr-TR');
+      var highlighted = wordUpper.split('').map(function (ch) {
+        return ch === spec.letter ? '<strong class="hl-letter">' + ch + '</strong>' : '<span>' + ch + '</span>';
+      }).join('');
+      el.visualHelperStrip.innerHTML = '<span>Harf: <strong class="digit-pill">' + spec.letter + ' / ' + spec.lowercase + '</strong></span>' +
+        '<span class="word-letters-pill">' + highlighted + '</span>';
+    } else if (spec.wordEn) {
+      el.visualHelperStrip.hidden = false;
+      el.visualHelperStrip.innerHTML = '<span class="learn-badge">Öğrenme Kartı</span>' +
+        '<strong>' + spec.wordEn + '</strong> = <span>' + spec.wordTr + '</span>' +
+        '<span class="phonetic-pill">okunuş: ' + spec.approxTr + '</span>';
     } else {
       el.visualHelperStrip.hidden = true;
       el.visualHelperStrip.innerHTML = '';
@@ -544,7 +559,11 @@
 
     if (currentSpec.mode === 'story') {
       el.taskStepPill.hidden = false;
-      el.taskStepPill.textContent = 'Görev ' + (state.storyTaskIndex + 1) + ' / 3';
+      var starsStr = '';
+      for (var si = 0; si < 3; si++) {
+        starsStr += si < state.storyTaskIndex ? '★' : (si === state.storyTaskIndex ? '✦' : '☆');
+      }
+      el.taskStepPill.textContent = starsStr + ' Görev ' + (state.storyTaskIndex + 1) + ' / 3';
     } else {
       el.taskStepPill.hidden = true;
     }
@@ -1095,6 +1114,9 @@
       onPartialProgress: function (done, total) {
         var dEl = document.getElementById('countProgressDigit');
         if (dEl) dEl.textContent = String(done);
+        document.querySelectorAll('.tenframe-dot').forEach(function (dot, di) {
+          dot.classList.toggle('filled', di < done);
+        });
         showToast(done + ' / ' + total);
         renderAccessibleMirror((window.MiloPhaser.getStateSnapshot() || {}).entities || []);
       },

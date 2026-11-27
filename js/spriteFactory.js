@@ -622,6 +622,258 @@
       drawStar(ctx, 16, 16, 4, 12, 4);
       ctx.fill();
     }, 32, 32);
+
+    // Storybook Medallion Backdrop for Interactive Props
+    registerTex(scene, 'ui-medallion', function (ctx) {
+      ctx.fillStyle = 'rgba(28, 48, 38, 0.22)';
+      ctx.beginPath(); ctx.ellipse(60, 108, 46, 10, 0, 0, Math.PI * 2); ctx.fill();
+      var mg = ctx.createRadialGradient(54, 48, 8, 60, 58, 54);
+      mg.addColorStop(0, '#fffef7');
+      mg.addColorStop(0.75, '#fff6dc');
+      mg.addColorStop(1, '#f3dfb4');
+      ctx.fillStyle = mg;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(60, 56, 48, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(214, 158, 64, 0.55)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.arc(60, 56, 42, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+    }, 120, 122);
+
+    // Drifting Cloud Texture
+    registerTex(scene, 'fx-cloud', function (ctx) {
+      var cg = ctx.createLinearGradient(0, 10, 0, 76);
+      cg.addColorStop(0, 'rgba(255,255,255,0.96)');
+      cg.addColorStop(1, 'rgba(225,245,252,0.86)');
+      ctx.fillStyle = cg;
+      ctx.beginPath();
+      ctx.ellipse(90, 54, 72, 22, 0, 0, Math.PI * 2);
+      ctx.arc(62, 40, 26, 0, Math.PI * 2);
+      ctx.arc(102, 34, 30, 0, Math.PI * 2);
+      ctx.arc(132, 46, 20, 0, Math.PI * 2);
+      ctx.fill();
+    }, 180, 86);
+
+    // Ambient Butterfly Texture
+    registerTex(scene, 'fx-butterfly', function (ctx) {
+      ctx.fillStyle = '#ff9ed2'; ctx.strokeStyle = '#a34076'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.ellipse(15, 16, 10, 12, -0.35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(33, 16, 10, 12, 0.35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffe17a';
+      ctx.beginPath(); ctx.ellipse(17, 29, 7, 8, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(31, 29, 7, 8, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#4e395e'; roundedRect(ctx, 22, 10, 4, 24, 2); ctx.fill();
+    }, 48, 44);
+
+    // High-Craft Painterly Canvas2D Scene Backdrops
+    var sceneIds = ['square', 'orchard', 'stream', 'forest', 'greenhouse', 'twilight', 'glade', 'finale'];
+    sceneIds.forEach(function (sid) {
+      registerTex(scene, 'bg-' + sid, function (ctx, W, H) {
+        var isNight = (sid === 'glade' || sid === 'finale' || sid === 'twilight');
+        // 1. Sky Gradient
+        var sky = ctx.createLinearGradient(0, 0, 0, 500);
+        if (sid === 'twilight') {
+          sky.addColorStop(0, '#363d78'); sky.addColorStop(0.55, '#89679e'); sky.addColorStop(1, '#f4ae96');
+        } else if (sid === 'glade') {
+          sky.addColorStop(0, '#1f2b59'); sky.addColorStop(0.6, '#49588f'); sky.addColorStop(1, '#988dc2');
+        } else if (sid === 'finale') {
+          sky.addColorStop(0, '#1b2f61'); sky.addColorStop(0.6, '#395588'); sky.addColorStop(1, '#6f8bb4');
+        } else {
+          sky.addColorStop(0, '#72cae9'); sky.addColorStop(0.65, '#c6eff6'); sky.addColorStop(1, '#fef4dc');
+        }
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, 520);
+
+        // Sun / Moon & Stars
+        if (isNight) {
+          var moonGlow = ctx.createRadialGradient(1070, 128, 12, 1070, 128, 130);
+          moonGlow.addColorStop(0, 'rgba(255, 246, 178, 0.55)');
+          moonGlow.addColorStop(1, 'rgba(255, 246, 178, 0)');
+          ctx.fillStyle = moonGlow; ctx.beginPath(); ctx.arc(1070, 128, 130, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#fff5bd'; ctx.beginPath(); ctx.arc(1070, 128, 36, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = sid === 'twilight' ? '#494781' : '#253466';
+          ctx.beginPath(); ctx.arc(1084, 118, 31, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(255, 250, 210, 0.85)';
+          [[140,95],[280,140],[430,82],[590,120],[740,76],[890,115],[1180,92]].forEach(function (st, idx) {
+            drawStar(ctx, st[0], st[1], 4, 4 + (idx % 3), 1.8); ctx.fill();
+          });
+        } else {
+          var sunGlow = ctx.createRadialGradient(1075, 126, 16, 1075, 126, 165);
+          sunGlow.addColorStop(0, 'rgba(255, 238, 140, 0.72)');
+          sunGlow.addColorStop(0.5, 'rgba(255, 224, 115, 0.25)');
+          sunGlow.addColorStop(1, 'rgba(255, 224, 115, 0)');
+          ctx.fillStyle = sunGlow; ctx.beginPath(); ctx.arc(1075, 126, 165, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ffd966'; ctx.beginPath(); ctx.arc(1075, 126, 42, 0, Math.PI * 2); ctx.fill();
+          // Soft sunbeams
+          ctx.fillStyle = 'rgba(255, 252, 220, 0.14)';
+          ctx.beginPath(); ctx.moveTo(1040, 130); ctx.lineTo(660, 500); ctx.lineTo(840, 500); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(1090, 150); ctx.lineTo(940, 500); ctx.lineTo(1140, 500); ctx.closePath(); ctx.fill();
+        }
+
+        // 2. Distant Mountains / Woodland Ridge
+        ctx.fillStyle = isNight ? 'rgba(54, 82, 92, 0.6)' : 'rgba(132, 198, 164, 0.55)';
+        ctx.beginPath();
+        ctx.moveTo(0, 440);
+        ctx.quadraticCurveTo(220, 320, 460, 405);
+        ctx.quadraticCurveTo(720, 310, 980, 395);
+        ctx.quadraticCurveTo(1140, 345, 1280, 410);
+        ctx.lineTo(1280, 540); ctx.lineTo(0, 540); ctx.closePath(); ctx.fill();
+
+        // 3. Midground Rolling Hills with soft shading
+        var hillGrad = ctx.createLinearGradient(0, 370, 0, 520);
+        hillGrad.addColorStop(0, isNight ? '#44705e' : '#a9de87');
+        hillGrad.addColorStop(1, isNight ? '#33594a' : '#7dc261');
+        ctx.fillStyle = hillGrad;
+        ctx.beginPath();
+        ctx.moveTo(0, 465);
+        ctx.bezierCurveTo(320, 365, 620, 480, 940, 395);
+        ctx.bezierCurveTo(1100, 360, 1200, 410, 1280, 440);
+        ctx.lineTo(1280, 720); ctx.lineTo(0, 720); ctx.closePath(); ctx.fill();
+
+        // Foreground Meadow Ground
+        var meadowGrad = ctx.createLinearGradient(0, 470, 0, 720);
+        meadowGrad.addColorStop(0, isNight ? '#2d5243' : '#73ba58');
+        meadowGrad.addColorStop(1, isNight ? '#1f3b2f' : '#539642');
+        ctx.fillStyle = meadowGrad;
+        ctx.fillRect(0, 475, W, 245);
+
+        // Soft winding garden path with pebble highlights
+        var pathGrad = ctx.createLinearGradient(0, 535, 0, 640);
+        pathGrad.addColorStop(0, isNight ? '#8e7d63' : '#ecd6ad');
+        pathGrad.addColorStop(1, isNight ? '#6e5f4a' : '#d5b988');
+        ctx.fillStyle = pathGrad;
+        ctx.beginPath();
+        ctx.moveTo(0, 540);
+        ctx.bezierCurveTo(380, 528, 860, 552, 1280, 536);
+        ctx.lineTo(1280, 628);
+        ctx.bezierCurveTo(860, 642, 380, 616, 0, 630);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = isNight ? 'rgba(255,240,200,0.12)' : 'rgba(255,250,232,0.42)';
+        for (var p = 60; p < 1240; p += 95) {
+          ctx.beginPath(); ctx.ellipse(p, 582 + ((p % 3) - 1) * 10, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // 4. Scene-Specific Storybook Landmarks
+        if (sid === 'square' || sid === 'finale') {
+          // Timber Cottage with Glowing Windows & Chimney Smoke
+          ctx.fillStyle = 'rgba(24,44,34,0.2)';
+          ctx.beginPath(); ctx.ellipse(150, 472, 118, 18, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#c86f58'; ctx.strokeStyle = '#7c3f2e'; ctx.lineWidth = 3;
+          roundedRect(ctx, 198, 224, 28, 48, 5); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = isNight ? '#d9cbb6' : '#fff4de'; ctx.strokeStyle = '#8b6542'; ctx.lineWidth = 4;
+          roundedRect(ctx, 54, 304, 192, 160, 16); ctx.fill(); ctx.stroke();
+          // Timber beams
+          ctx.strokeStyle = '#a3774f'; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(54, 342); ctx.lineTo(246, 342); ctx.stroke();
+          // Shingled roof
+          var roofG = ctx.createLinearGradient(150, 205, 150, 316);
+          roofG.addColorStop(0, isNight ? '#b55f4d' : '#ea7b63');
+          roofG.addColorStop(1, isNight ? '#7d3a2f' : '#bd4c39');
+          ctx.fillStyle = roofG; ctx.strokeStyle = '#742d22'; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(32, 314); ctx.lineTo(150, 208); ctx.lineTo(268, 314); ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Arched Door & Warm Windows
+          ctx.fillStyle = '#9e5d38'; ctx.strokeStyle = '#5c321a'; ctx.lineWidth = 3.2;
+          ctx.beginPath(); ctx.moveTo(128, 464); ctx.lineTo(128, 396); ctx.arc(150, 396, 22, Math.PI, 0); ctx.lineTo(172, 464); ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#ffe57a'; ctx.strokeStyle = '#7c5534';
+          roundedRect(ctx, 74, 356, 38, 38, 9); ctx.fill(); ctx.stroke();
+          roundedRect(ctx, 188, 356, 38, 38, 9); ctx.fill(); ctx.stroke();
+
+          // Ornate Dawn Bell Archway (Şafak Çanı)
+          ctx.fillStyle = '#8f6948'; ctx.strokeStyle = '#573c24'; ctx.lineWidth = 3;
+          roundedRect(ctx, 1086, 266, 14, 194, 6); ctx.fill(); ctx.stroke();
+          roundedRect(ctx, 1184, 266, 14, 194, 6); ctx.fill(); ctx.stroke();
+          roundedRect(ctx, 1072, 250, 140, 22, 10); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#ffdb5c'; ctx.strokeStyle = '#a37114';
+          ctx.beginPath(); ctx.moveTo(1142, 272); ctx.bezierCurveTo(1162, 272, 1164, 304, 1170, 314); ctx.lineTo(1114, 314); ctx.bezierCurveTo(1120, 304, 1122, 272, 1142, 272); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.arc(1142, 319, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        } else if (sid === 'orchard') {
+          // Cozy Checkered Picnic Blanket + Wooden Fence + Shaded Apple Tree
+          ctx.fillStyle = '#d4a370'; ctx.strokeStyle = '#855830'; ctx.lineWidth = 2.6;
+          roundedRect(ctx, 720, 444, 440, 10, 4); ctx.fill(); ctx.stroke();
+          roundedRect(ctx, 720, 470, 440, 10, 4); ctx.fill(); ctx.stroke();
+          [750, 840, 930, 1020, 1110].forEach(function (fx) {
+            roundedRect(ctx, fx, 424, 16, 68, 6); ctx.fill(); ctx.stroke();
+          });
+          // Picnic Blanket on meadow
+          ctx.fillStyle = '#fff3df'; ctx.strokeStyle = '#d65d52'; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.moveTo(760, 560); ctx.lineTo(980, 560); ctx.lineTo(1030, 645); ctx.lineTo(710, 645); ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = 'rgba(232, 92, 82, 0.32)';
+          ctx.fillRect(775, 576, 210, 18); ctx.fillRect(755, 608, 245, 18);
+
+          // Lush Shaded Apple Tree
+          ctx.fillStyle = 'rgba(24,44,34,0.22)'; ctx.beginPath(); ctx.ellipse(152, 496, 86, 16, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#915b38'; ctx.strokeStyle = '#5c351c'; ctx.lineWidth = 3.5;
+          ctx.beginPath(); ctx.moveTo(124, 494); ctx.quadraticCurveTo(132, 390, 126, 305); ctx.lineTo(176, 305); ctx.quadraticCurveTo(172, 395, 184, 494); ctx.closePath(); ctx.fill(); ctx.stroke();
+          [[152, 224, 96, '#489146'], [88, 272, 68, '#55a14d'], [216, 272, 70, '#5ba852'], [152, 268, 76, '#66b859']].forEach(function (c) {
+            ctx.fillStyle = c[3]; ctx.beginPath(); ctx.arc(c[0], c[1], c[2], 0, Math.PI * 2); ctx.fill();
+          });
+          [[106, 244], [190, 232], [150, 290], [218, 282]].forEach(function (ap) {
+            ctx.fillStyle = '#eb4444'; ctx.strokeStyle = '#8b1923'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(ap[0], ap[1], 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          });
+        } else if (sid === 'stream') {
+          // 7-band Pastel Rainbow + Shimmering Creek + Lily Pads
+          ['#ff9494', '#ffb770', '#ffeb7a', '#8fe088', '#78c9f7', '#9c96f5'].forEach(function (col, idx) {
+            ctx.strokeStyle = col; ctx.globalAlpha = 0.5; ctx.lineWidth = 11;
+            ctx.beginPath(); ctx.arc(640, 415, 300 - idx * 12, Math.PI, 0, false); ctx.stroke();
+          });
+          ctx.globalAlpha = 1;
+          var wg = ctx.createLinearGradient(460, 445, 760, 720);
+          wg.addColorStop(0, '#6ed0f7'); wg.addColorStop(1, '#399ed9');
+          ctx.fillStyle = wg; ctx.strokeStyle = '#d6f4ff'; ctx.lineWidth = 5;
+          ctx.beginPath(); ctx.moveTo(525, 450); ctx.bezierCurveTo(500, 535, 455, 610, 420, 720); ctx.lineTo(800, 720); ctx.bezierCurveTo(735, 600, 685, 530, 655, 450); ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.strokeStyle = 'rgba(235, 250, 255, 0.78)'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(535, 515); ctx.quadraticCurveTo(585, 505, 635, 516); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(495, 600); ctx.quadraticCurveTo(585, 588, 685, 602); ctx.stroke();
+          // Wooden Plank Bridge
+          ctx.fillStyle = '#c4834b'; ctx.strokeStyle = '#6d411c'; ctx.lineWidth = 3;
+          roundedRect(ctx, 455, 542, 285, 36, 10); ctx.fill(); ctx.stroke();
+          // Lily pad
+          ctx.fillStyle = '#5bb554'; ctx.strokeStyle = '#337532'; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.ellipse(725, 655, 42, 16, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#ffabc3'; ctx.beginPath(); ctx.arc(725, 645, 9, 0, Math.PI * 2); ctx.fill();
+        } else if (sid === 'greenhouse') {
+          // Victorian Glass Conservatory
+          ctx.fillStyle = 'rgba(255, 252, 224, 0.28)';
+          ctx.beginPath(); ctx.moveTo(220, 90); ctx.lineTo(380, 90); ctx.lineTo(520, 560); ctx.lineTo(310, 560); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(720, 90); ctx.lineTo(880, 90); ctx.lineTo(1020, 560); ctx.lineTo(810, 560); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = '#51786e'; ctx.lineWidth = 9;
+          roundedRect(ctx, 85, 105, 1110, 415, 120); ctx.stroke();
+          ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(81, 120, 110, 0.65)';
+          [340, 640, 940].forEach(function (gx) {
+            ctx.beginPath(); ctx.moveTo(gx, 105); ctx.lineTo(gx, 485); ctx.stroke();
+          });
+          // Terracotta Flower Pots
+          [145, 1115].forEach(function (px) {
+            ctx.fillStyle = '#d97553'; ctx.strokeStyle = '#8b3e24'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(px - 26, 442); ctx.lineTo(px + 26, 442); ctx.lineTo(px + 18, 492); ctx.lineTo(px - 18, 492); ctx.closePath(); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#53a34b'; ctx.beginPath(); ctx.arc(px, 424, 24, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ff9fb4'; ctx.beginPath(); ctx.arc(px - 10, 416, 7, 0, Math.PI * 2); ctx.arc(px + 10, 420, 7, 0, Math.PI * 2); ctx.fill();
+          });
+        } else {
+          // Woodland Forest / Glade / Twilight Oaks & Glowing Mushrooms
+          [[135, 320, '#44804e'], [1110, 315, '#3b6d49'], [965, 330, '#4b8a55']].forEach(function (t) {
+            ctx.fillStyle = '#7c4f32'; ctx.strokeStyle = '#4e2f1b'; ctx.lineWidth = 3;
+            roundedRect(ctx, t[0] - 22, t[1], 44, 180, 12); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = t[2];
+            ctx.beginPath(); ctx.arc(t[0], t[1] - 46, 78, 0, Math.PI * 2); ctx.arc(t[0] - 44, t[1] - 10, 56, 0, Math.PI * 2); ctx.arc(t[0] + 44, t[1] - 10, 56, 0, Math.PI * 2); ctx.fill();
+          });
+        }
+
+        // 5. Wildflower Meadow Accents
+        var flColors = isNight ? ['#fff394', '#a5d8ff'] : ['#ff9fb4', '#ffe066', '#ffffff'];
+        [[290, 505], [460, 515], [790, 512], [1025, 505], [340, 665], [910, 672]].forEach(function (pt, i) {
+          ctx.strokeStyle = '#3f7c3c'; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.moveTo(pt[0], pt[1] + 18); ctx.lineTo(pt[0], pt[1]); ctx.stroke();
+          ctx.fillStyle = flColors[i % flColors.length];
+          ctx.beginPath(); ctx.arc(pt[0], pt[1] - 4, 8, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#f7a531';
+          ctx.beginPath(); ctx.arc(pt[0], pt[1] - 4, 3.5, 0, Math.PI * 2); ctx.fill();
+        });
+      }, 1280, 720);
+    });
   }
 
   window.MiloSpriteFactory = {
