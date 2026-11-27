@@ -1783,9 +1783,11 @@ button {
   }
   .mode-grid, .explore-grid { grid-template-columns: 1fr; }
   .cover-card { max-height: 94svh; overflow-y: auto; }
+  .task-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 10px 12px; }
+  .word-chip { align-self: center; max-width: 100%; flex-wrap: wrap; justify-content: center; }
   .word-approx { display: inline; font-size: 11px; }
-  .visual-helper-strip { top: auto; bottom: 168px; z-index: 21; font-size: 12px; padding: 5px 10px; }
-  .stage:has(#wordChip:not([hidden])) .visual-helper-strip { display: none; }
+  .visual-helper-strip { top: auto; bottom: 206px; z-index: 21; font-size: 12px; padding: 5px 10px; max-width: calc(100% - 20px); }
+  .stage:has(#wordChip:not([hidden])) .visual-helper-strip { display: none !important; }
 }
 
 body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {
@@ -6071,10 +6073,9 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
       var g = this.add.graphics();
       this.bgContainer.add(g);
       if (sceneId === 'finale' && wc.lit) {
-        g.fillStyle(0xffe785, 0.08);
-        g.fillCircle(1080, 340, 260);
-        g.fillStyle(0xffe785, 0.06);
-        g.fillCircle(640, 400, 340);
+        var bellGlow = this.add.image(1080, 340, 'pt-sparkle').setScale(10).setAlpha(0.14).setTint(0xffe785).setBlendMode('ADD');
+        var hubGlow = this.add.image(640, 410, 'pt-sparkle').setScale(13).setAlpha(0.10).setTint(0xffe785).setBlendMode('ADD');
+        this.bgContainer.add([bellGlow, hubGlow]);
       }
       if (sceneId === 'stream' && wc.bridgeOpen) {
         g.fillStyle(0xb97b45, 1); g.lineStyle(3, 0x6b411e, 1);
@@ -7430,7 +7431,7 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
       }).join('');
       el.visualHelperStrip.innerHTML = '<span>Harf: <strong class="digit-pill">' + spec.letter + ' / ' + spec.lowercase + '</strong></span>' +
         '<span class="word-letters-pill">' + highlighted + '</span>';
-    } else if (spec.wordEn && window.innerWidth > 600) {
+    } else if (spec.wordEn && window.innerWidth > 820) {
       el.visualHelperStrip.hidden = false;
       el.visualHelperStrip.innerHTML = '<span class="learn-badge">Öğrenme Kartı</span>' +
         '<strong>' + spec.wordEn + '</strong> = <span>' + spec.wordTr + '</span>' +
@@ -7603,17 +7604,12 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
     state.storyTaskIndex = taskIdx || 0;
     saveProgress();
 
+    var lvl = currentLevelObj();
     if (!el.coverOverlay.hidden) {
-      window.MiloCinematics.animateCoverOut(el.coverOverlay, function () {
-        var lvl = currentLevelObj();
-        window.MiloCinematics.showChapterBanner(el.chapterBanner, lvl.order, lvl.titleTr);
-        renderCurrentTask(true);
-      });
-    } else {
-      var lvl = currentLevelObj();
-      window.MiloCinematics.showChapterBanner(el.chapterBanner, lvl.order, lvl.titleTr);
-      renderCurrentTask(true);
+      window.MiloCinematics.animateCoverOut(el.coverOverlay);
     }
+    window.MiloCinematics.showChapterBanner(el.chapterBanner, lvl.order, lvl.titleTr);
+    renderCurrentTask(true);
   }
 
   function openWordsModal() {
@@ -8079,6 +8075,8 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
         };
       },
       startLevel: function (mode, order, taskIdx) {
+        if (window.gsap) window.gsap.killTweensOf(el.coverOverlay);
+        el.coverOverlay.hidden = true;
         startModeLevel(mode, order, taskIdx || 0);
       },
       tapEntity: function (entityId) {

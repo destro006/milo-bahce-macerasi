@@ -1775,9 +1775,11 @@ button {
   }
   .mode-grid, .explore-grid { grid-template-columns: 1fr; }
   .cover-card { max-height: 94svh; overflow-y: auto; }
+  .task-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 10px 12px; }
+  .word-chip { align-self: center; max-width: 100%; flex-wrap: wrap; justify-content: center; }
   .word-approx { display: inline; font-size: 11px; }
-  .visual-helper-strip { top: auto; bottom: 168px; z-index: 21; font-size: 12px; padding: 5px 10px; }
-  .stage:has(#wordChip:not([hidden])) .visual-helper-strip { display: none; }
+  .visual-helper-strip { top: auto; bottom: 206px; z-index: 21; font-size: 12px; padding: 5px 10px; max-width: calc(100% - 20px); }
+  .stage:has(#wordChip:not([hidden])) .visual-helper-strip { display: none !important; }
 }
 
 body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {

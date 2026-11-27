@@ -523,7 +523,7 @@
       }).join('');
       el.visualHelperStrip.innerHTML = '<span>Harf: <strong class="digit-pill">' + spec.letter + ' / ' + spec.lowercase + '</strong></span>' +
         '<span class="word-letters-pill">' + highlighted + '</span>';
-    } else if (spec.wordEn && window.innerWidth > 600) {
+    } else if (spec.wordEn && window.innerWidth > 820) {
       el.visualHelperStrip.hidden = false;
       el.visualHelperStrip.innerHTML = '<span class="learn-badge">Öğrenme Kartı</span>' +
         '<strong>' + spec.wordEn + '</strong> = <span>' + spec.wordTr + '</span>' +
@@ -696,17 +696,12 @@
     state.storyTaskIndex = taskIdx || 0;
     saveProgress();
 
+    var lvl = currentLevelObj();
     if (!el.coverOverlay.hidden) {
-      window.MiloCinematics.animateCoverOut(el.coverOverlay, function () {
-        var lvl = currentLevelObj();
-        window.MiloCinematics.showChapterBanner(el.chapterBanner, lvl.order, lvl.titleTr);
-        renderCurrentTask(true);
-      });
-    } else {
-      var lvl = currentLevelObj();
-      window.MiloCinematics.showChapterBanner(el.chapterBanner, lvl.order, lvl.titleTr);
-      renderCurrentTask(true);
+      window.MiloCinematics.animateCoverOut(el.coverOverlay);
     }
+    window.MiloCinematics.showChapterBanner(el.chapterBanner, lvl.order, lvl.titleTr);
+    renderCurrentTask(true);
   }
 
   function openWordsModal() {
@@ -1172,6 +1167,8 @@
         };
       },
       startLevel: function (mode, order, taskIdx) {
+        if (window.gsap) window.gsap.killTweensOf(el.coverOverlay);
+        el.coverOverlay.hidden = true;
         startModeLevel(mode, order, taskIdx || 0);
       },
       tapEntity: function (entityId) {

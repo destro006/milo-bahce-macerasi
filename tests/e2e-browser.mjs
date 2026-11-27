@@ -5,6 +5,7 @@ import path from 'node:path';
 const proj = 'C:/Users/PC/.gemini/antigravity/scratch/milo-bahce-macerasi';
 const evidenceDir = 'C:/Users/PC/.gemini/antigravity/brain/73e86152-6084-4672-b697-858c1d16b6b4/evidence';
 const userData = 'C:/Users/PC/.gemini/antigravity/brain/73e86152-6084-4672-b697-858c1d16b6b4/scratch/edge-e2e-profile';
+try { fs.rmSync(userData, { recursive: true, force: true }); } catch {}
 fs.mkdirSync(evidenceDir, { recursive: true });
 fs.mkdirSync(userData, { recursive: true });
 
@@ -108,6 +109,7 @@ async function runSuite() {
   try {
     // 1. Cover hub & 3-tab check
     await snapPng('01_hub_cover.png');
+    await evalJS(`localStorage.clear()`);
     const contentCheck = await evalJS(`window.__MILO_TEST_API__.validateContent()`);
     if (!contentCheck.ok) throw new Error('In-browser content validation failed');
 
@@ -127,12 +129,16 @@ async function runSuite() {
     // Test Pickup + Rapid Triple-Tap Idempotency (G05, G06)
     const appleId = await evalJS(`window.__MILO_TEST_API__.getSnapshot().phaser.entities.find(e => e.isCorrect).id`);
     await evalJS(`window.__MILO_TEST_API__.tapEntity('${appleId}'); window.__MILO_TEST_API__.tapEntity('${appleId}'); window.__MILO_TEST_API__.tapEntity('${appleId}');`);
-    await new Promise((r) => setTimeout(r, 550));
+    await new Promise((r) => setTimeout(r, 750));
     await snapPng('03_pickup_reach.png');
-    await new Promise((r) => setTimeout(r, 700));
+    await new Promise((r) => setTimeout(r, 600));
     await snapPng('04_carry_to_basket.png');
-    await new Promise((r) => setTimeout(r, 1400));
-    const afterPickup = await evalJS(`window.__MILO_TEST_API__.getSnapshot()`);
+    let afterPickup = null;
+    for (let w = 0; w < 24; w++) {
+      await new Promise((r) => setTimeout(r, 180));
+      afterPickup = await evalJS(`window.__MILO_TEST_API__.getSnapshot()`);
+      if (afterPickup.phaser.fsmState === 'feedback') break;
+    }
     if (afterPickup.phaser.fsmState !== 'feedback') throw new Error('Expected feedback after pickup, got ' + afterPickup.phaser.fsmState);
     if (!afterPickup.phaser.markersLog.includes('pickup_contact') || !afterPickup.phaser.markersLog.includes('release_contact')) {
       throw new Error('Missing pickup/release contact markers: ' + JSON.stringify(afterPickup.phaser.markersLog));
@@ -282,11 +288,14 @@ async function runSuite() {
       perf: beforeReload.phaser.perf,
       consoleErrors: consoleErrors.length
     }));
+  } catch (err) {
+    console.error('E2E_FAILED:', err && err.stack ? err.stack : err);
+    process.exitCode = 1;
   } finally {
     ws.close();
     browser.kill();
     srv.kill();
-    process.exit(0);
+    process.exit(process.exitCode || 0);
   }
 }
 

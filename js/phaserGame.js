@@ -269,10 +269,9 @@
       var g = this.add.graphics();
       this.bgContainer.add(g);
       if (sceneId === 'finale' && wc.lit) {
-        g.fillStyle(0xffe785, 0.08);
-        g.fillCircle(1080, 340, 260);
-        g.fillStyle(0xffe785, 0.06);
-        g.fillCircle(640, 400, 340);
+        var bellGlow = this.add.image(1080, 340, 'pt-sparkle').setScale(10).setAlpha(0.14).setTint(0xffe785).setBlendMode('ADD');
+        var hubGlow = this.add.image(640, 410, 'pt-sparkle').setScale(13).setAlpha(0.10).setTint(0xffe785).setBlendMode('ADD');
+        this.bgContainer.add([bellGlow, hubGlow]);
       }
       if (sceneId === 'stream' && wc.bridgeOpen) {
         g.fillStyle(0xb97b45, 1); g.lineStyle(3, 0x6b411e, 1);
