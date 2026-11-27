@@ -1775,8 +1775,8 @@ button {
   }
   .mode-grid, .explore-grid { grid-template-columns: 1fr; }
   .cover-card { max-height: 94svh; overflow-y: auto; }
-  .word-approx { display: none; }
-  .visual-helper-strip { top: auto; bottom: 196px; z-index: 21; font-size: 12px; padding: 5px 10px; }
+  .word-approx { display: inline; font-size: 11px; }
+  .visual-helper-strip { top: auto; bottom: 168px; z-index: 21; font-size: 12px; padding: 5px 10px; }
 }
 
 body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {

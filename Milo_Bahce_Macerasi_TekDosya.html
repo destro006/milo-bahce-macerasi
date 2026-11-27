@@ -1783,8 +1783,8 @@ button {
   }
   .mode-grid, .explore-grid { grid-template-columns: 1fr; }
   .cover-card { max-height: 94svh; overflow-y: auto; }
-  .word-approx { display: none; }
-  .visual-helper-strip { top: auto; bottom: 196px; z-index: 21; font-size: 12px; padding: 5px 10px; }
+  .word-approx { display: inline; font-size: 11px; }
+  .visual-helper-strip { top: auto; bottom: 168px; z-index: 21; font-size: 12px; padding: 5px 10px; }
 }
 
 body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {
@@ -7429,7 +7429,7 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
       }).join('');
       el.visualHelperStrip.innerHTML = '<span>Harf: <strong class="digit-pill">' + spec.letter + ' / ' + spec.lowercase + '</strong></span>' +
         '<span class="word-letters-pill">' + highlighted + '</span>';
-    } else if (spec.wordEn) {
+    } else if (spec.wordEn && window.innerWidth > 600) {
       el.visualHelperStrip.hidden = false;
       el.visualHelperStrip.innerHTML = '<span class="learn-badge">Öğrenme Kartı</span>' +
         '<strong>' + spec.wordEn + '</strong> = <span>' + spec.wordTr + '</span>' +

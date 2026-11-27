@@ -523,7 +523,7 @@
       }).join('');
       el.visualHelperStrip.innerHTML = '<span>Harf: <strong class="digit-pill">' + spec.letter + ' / ' + spec.lowercase + '</strong></span>' +
         '<span class="word-letters-pill">' + highlighted + '</span>';
-    } else if (spec.wordEn) {
+    } else if (spec.wordEn && window.innerWidth > 600) {
       el.visualHelperStrip.hidden = false;
       el.visualHelperStrip.innerHTML = '<span class="learn-badge">Öğrenme Kartı</span>' +
         '<strong>' + spec.wordEn + '</strong> = <span>' + spec.wordTr + '</span>' +
