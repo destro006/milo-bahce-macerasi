@@ -34,6 +34,7 @@ console.log('Vendor Check OK: phaser.min.js and gsap.min.js present.');
 // 3. Syntax check all JS modules
 const jsFiles = [
   'js/contentData.js',
+  'js/voicePack.js',
   'js/audio.js',
   'js/characters.js',
   'js/spriteFactory.js',

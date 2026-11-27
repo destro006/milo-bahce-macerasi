@@ -9,6 +9,7 @@ $scripts = @(
   'vendor/phaser.min.js',
   'vendor/gsap.min.js',
   'js/contentData.js',
+  'js/voicePack.js',
   'js/audio.js',
   'js/characters.js',
   'js/spriteFactory.js',

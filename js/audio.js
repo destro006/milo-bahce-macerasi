@@ -19,6 +19,9 @@
   var visemeTimer = null;
   var visemeListener = null;
   var audioLog = [];
+  var activeVoiceSource = null;
+  var activeHtmlAudio = null;
+  var decodedAudioCache = {};
 
   var PENTATONIC = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
 
@@ -223,9 +226,16 @@
     });
     if (!matches.length) return null;
 
-    var femaleHints = ['emel', 'yelda', 'filiz', 'seda', 'melis', 'defne', 'female', 'kadın', 'aria', 'jenny', 'zira', 'samantha', 'libby', 'sonia', 'google'];
+    var neuralHints = ['online (natural)', 'neural', 'natural', 'google'];
+    var femaleHints = ['emel', 'yelda', 'filiz', 'seda', 'melis', 'defne', 'female', 'kadın', 'aria', 'jenny', 'zira', 'samantha', 'libby', 'sonia'];
     var maleHints = ['tolga', 'ahmet', 'mehmet', 'erkek', 'male', 'david', 'mark', 'guy', 'ryan'];
 
+    for (var nIdx = 0; nIdx < matches.length; nIdx++) {
+      var nn = (matches[nIdx].name || '').toLowerCase();
+      var isNat = neuralHints.some(function (h) { return nn.indexOf(h) >= 0; });
+      var isM = maleHints.some(function (m) { return nn.indexOf(m) >= 0; });
+      if (isNat && !isM) return matches[nIdx];
+    }
     for (var i = 0; i < matches.length; i++) {
       var n = (matches[i].name || '').toLowerCase();
       var isMale = maleHints.some(function (m) { return n.indexOf(m) >= 0; });
@@ -239,6 +249,40 @@
       }
     }
     return matches[0];
+  }
+
+  function sanitizeTrText(raw) {
+    return String(raw || '')
+      .replace(/\(yaklaşık[^)]*\)/gi, '')
+      .replace(/[“”"'()]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function lookupNeuralClip(text, prefix) {
+    if (!window.MiloVoicePack) return null;
+    var raw = String(text || '').trim();
+    if (prefix === 'en') {
+      var mapEn = window.MiloVoicePack.en || {};
+      return mapEn[raw.toLowerCase()] || mapEn[raw] || null;
+    }
+    if (prefix === 'tr') {
+      var mapTr = window.MiloVoicePack.tr || {};
+      if (mapTr[raw]) return mapTr[raw];
+      var clean = sanitizeTrText(raw);
+      return mapTr[clean] || null;
+    }
+    return null;
+  }
+
+  function base64ToArrayBuffer(b64) {
+    var bin = window.atob(b64);
+    var len = bin.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+      bytes[i] = bin.charCodeAt(i);
+    }
+    return bytes.buffer;
   }
 
   function emitViseme(v) {
@@ -289,13 +333,30 @@
     }, 85);
   }
 
+  function stopActiveAudioOutputs() {
+    if (activeVoiceSource) {
+      try { activeVoiceSource.onended = null; activeVoiceSource.stop(); } catch (e) {}
+      activeVoiceSource = null;
+    }
+    if (activeHtmlAudio) {
+      try {
+        activeHtmlAudio.onended = null;
+        activeHtmlAudio.onerror = null;
+        activeHtmlAudio.pause();
+        activeHtmlAudio.src = '';
+      } catch (e) {}
+      activeHtmlAudio = null;
+    }
+    if ('speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+  }
+
   function stopSpeech() {
     speechToken += 1;
     stopVisemes();
     duckMusic(false);
-    if ('speechSynthesis' in window) {
-      try { window.speechSynthesis.cancel(); } catch (e) {}
-    }
+    stopActiveAudioOutputs();
   }
 
   function recordAudioEvent(entry) {
@@ -303,14 +364,138 @@
     if (audioLog.length > 80) audioLog.shift();
   }
 
+  function playHtmlAudioFallback(clipB64, rate, text, myToken, finish) {
+    try {
+      var audioEl = new Audio('data:audio/mpeg;base64,' + clipB64);
+      audioEl.playbackRate = rate;
+      activeHtmlAudio = audioEl;
+      audioEl.onended = finish;
+      audioEl.onerror = finish;
+      duckMusic(true);
+      startVisemesForText(text, myToken);
+      var playPromise = audioEl.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(function () { finish(); });
+      }
+      setTimeout(finish, 4500);
+    } catch (e) {
+      finish();
+    }
+  }
+
   function speakUtterance(text, locale, opts) {
     opts = opts || {};
     var myToken = ++speechToken;
     stopVisemes();
+    stopActiveAudioOutputs();
 
     if (muted || !voiceOn || !text) {
       recordAudioEvent({ text: text, locale: locale, status: 'skipped-muted-or-empty', ts: Date.now() });
       return { spoken: false, reason: muted ? 'muted' : 'voice-off' };
+    }
+
+    var prefix = locale.slice(0, 2).toLowerCase();
+    var ended = false;
+    function finish() {
+      if (ended) return;
+      ended = true;
+      if (myToken === speechToken) {
+        stopVisemes();
+        duckMusic(false);
+        if (typeof opts.onEnd === 'function') {
+          setTimeout(function () {
+            if (myToken === speechToken) opts.onEnd();
+          }, 180);
+        }
+      }
+    }
+
+    var clipB64 = lookupNeuralClip(text, prefix);
+    if (clipB64) {
+      var rate = opts.slow ? 0.76 : 1.0;
+      var cacheKey = prefix + ':' + String(text).trim();
+      recordAudioEvent({
+        text: text,
+        locale: locale,
+        voiceName: 'neural-' + locale,
+        slow: !!opts.slow,
+        status: 'playing-neural',
+        ts: Date.now()
+      });
+
+      var ac = ensureContext();
+      var playDecoded = function (buf) {
+        if (myToken !== speechToken || muted || !voiceOn) { finish(); return; }
+        try {
+          var src = ac.createBufferSource();
+          src.buffer = buf;
+          src.playbackRate.value = rate;
+          src.connect(masterGain || ac.destination);
+          activeVoiceSource = src;
+          duckMusic(true);
+          startVisemesForText(text, myToken);
+          src.onended = function () {
+            if (activeVoiceSource === src) activeVoiceSource = null;
+            finish();
+          };
+          src.start(0);
+          var estMs = Math.max(900, Math.round((buf.duration * 1000) / rate) + 400);
+          setTimeout(finish, estMs);
+        } catch (err) {
+          playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+        }
+      };
+
+      var ensureRunningAndPlay = function (buf) {
+        if (myToken !== speechToken || muted || !voiceOn) { finish(); return; }
+        if (ac.state === 'running') {
+          playDecoded(buf);
+          return;
+        }
+        if (typeof ac.resume === 'function') {
+          var settled = false;
+          var raceTimer = setTimeout(function () {
+            if (settled) return;
+            settled = true;
+            if (ac.state === 'running') playDecoded(buf);
+            else playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+          }, 120);
+          ac.resume().then(function () {
+            if (settled) return;
+            settled = true;
+            clearTimeout(raceTimer);
+            if (ac.state === 'running') playDecoded(buf);
+            else playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+          }).catch(function () {
+            if (settled) return;
+            settled = true;
+            clearTimeout(raceTimer);
+            playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+          });
+        } else {
+          playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+        }
+      };
+
+      if (ac && typeof ac.decodeAudioData === 'function') {
+        if (decodedAudioCache[cacheKey]) {
+          ensureRunningAndPlay(decodedAudioCache[cacheKey]);
+        } else {
+          try {
+            ac.decodeAudioData(base64ToArrayBuffer(clipB64), function (decoded) {
+              decodedAudioCache[cacheKey] = decoded;
+              ensureRunningAndPlay(decoded);
+            }, function () {
+              playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+            });
+          } catch (decodeErr) {
+            playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+          }
+        }
+      } else {
+        playHtmlAudioFallback(clipB64, rate, text, myToken, finish);
+      }
+      return { spoken: true, voice: 'neural-' + locale };
     }
 
     if (!('speechSynthesis' in window)) {
@@ -318,7 +503,6 @@
       return { spoken: false, reason: 'no-speech-api' };
     }
 
-    var prefix = locale.slice(0, 2).toLowerCase();
     var chosenVoice = pickPreferredVoice(prefix);
 
     // Strictly do NOT substitute Turkish phonetic spelling or Turkish voice for English audio
@@ -328,38 +512,26 @@
       return { spoken: false, reason: 'no-english-voice' };
     }
 
-    try { window.speechSynthesis.cancel(); } catch (e) {}
-
-    var u = new SpeechSynthesisUtterance(text);
+    var spokenText = prefix === 'tr' ? (sanitizeTrText(text) || String(text)) : String(text);
+    var u = new SpeechSynthesisUtterance(spokenText);
     u.lang = locale;
     if (chosenVoice) u.voice = chosenVoice;
-    u.rate = opts.rate || (prefix === 'en' ? (opts.slow ? 0.62 : 0.84) : 0.92);
-    u.pitch = opts.pitch || (prefix === 'tr' ? 1.12 : 1.06);
-
-    var ended = false;
-    function finish() {
-      if (ended) return;
-      ended = true;
-      if (myToken === speechToken) {
-        stopVisemes();
-        duckMusic(false);
-      }
-      if (typeof opts.onEnd === 'function') opts.onEnd();
-    }
+    u.rate = opts.rate || (prefix === 'en' ? (opts.slow ? 0.76 : 0.94) : 0.98);
+    u.pitch = 1.0;
 
     u.onstart = function () {
       if (myToken !== speechToken) return;
       duckMusic(true);
-      startVisemesForText(text, myToken);
+      startVisemesForText(spokenText, myToken);
     };
     u.onend = finish;
     u.onerror = finish;
 
     // Safety fallback if browser speechSynthesis never fires onend
-    setTimeout(finish, Math.max(1800, text.length * 110));
+    setTimeout(finish, Math.max(1800, spokenText.length * 110));
 
     recordAudioEvent({
-      text: text,
+      text: spokenText,
       locale: locale,
       voiceName: chosenVoice ? chosenVoice.name : 'default-' + locale,
       slow: !!opts.slow,
@@ -390,11 +562,13 @@
   }
 
   function hasEnglishVoice() {
+    if (window.MiloVoicePack && window.MiloVoicePack.en && Object.keys(window.MiloVoicePack.en).length > 0) return true;
     refreshVoices();
     return !!pickPreferredVoice('en');
   }
 
   function hasTurkishFemaleVoice() {
+    if (window.MiloVoicePack && window.MiloVoicePack.tr && Object.keys(window.MiloVoicePack.tr).length > 0) return true;
     refreshVoices();
     return !!pickPreferredVoice('tr');
   }

@@ -329,7 +329,7 @@
         englishAudioLocale: 'en-US',
         instructionTr: '“' + targetEn + '” (' + displayTr + ') kelimesini dinle ve uygun olanı seç.',
         spokenPromptTr: 'Haydi ' + displayTr + ' olanı bulalım.',
-        hintTr: 'İpucu: “' + displayTr + '” olanı ara.',
+        hintTr: 'İpucu: ' + displayTr + ' olanı ara.',
         transferDestination: dest,
         successFeedbackTr: 'Doğru cevap',
         candidateCount: defaultChoices
@@ -547,7 +547,9 @@
       locale: 'en-US',
       evaluator: e[4],
       instructionTr: 'İngilizce kelimeyi dinle ve uygun görseli seç.',
+      spokenPromptTr: 'İngilizce kelimeyi dinle ve uygun görseli seç.',
       hintTr: 'Anlamı: ' + e[3] + ' (yaklaşık okunuş: ' + v.approx + ')',
+      spokenHintTr: 'İpucu: ' + e[3] + ' olanı ara.',
       candidateCount: e[5],
       slowReplay: true,
       difficultyBand: e[6],

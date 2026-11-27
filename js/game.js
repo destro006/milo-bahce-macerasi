@@ -189,7 +189,7 @@
           labelTr: dv.tr,
           ariaLabel: dv.tr + ' (' + dv.en + ')',
           isCorrect: false,
-          wrongHintTr: 'Bu ' + dv.tr + '. Biz ' + task.targetTr + ' (' + task.targetEn + ') arıyoruz.'
+          wrongHintTr: 'Bu ' + dv.tr + '. Tekrar bakalım!'
         });
       });
 
@@ -204,7 +204,9 @@
         speakerId: tIdx === 0 ? lvl.friendId : 'milo',
         dialogTr: tIdx === 0 ? lvl.dialogueIntroTr : (lvl.openingActionTr + ' ' + task.spokenPromptTr),
         instructionTr: task.instructionTr,
+        spokenPromptTr: task.spokenPromptTr,
         hintTr: task.hintTr,
+        spokenHintTr: task.hintTr,
         wordEn: task.targetEn,
         wordTr: task.targetTr,
         approxTr: task.approxTr,
@@ -284,7 +286,9 @@
         speakerId: 'pof',
         dialogTr: 'Pof: “Haydi rakamlarla sayalım! ' + lvl.instructionTr + '”',
         instructionTr: lvl.instructionTr,
+        spokenPromptTr: lvl.instructionTr,
         hintTr: lvl.hintTr,
+        spokenHintTr: lvl.hintTr,
         evaluator: lvl.evaluator,
         transferDestination: 'basket',
         showDropTarget: lvl.evaluator === 'collect_quantity',
@@ -308,7 +312,7 @@
             hideLabel: true,
             ariaLabel: ch + ' harfi',
             isCorrect: ch === 'Ğ',
-            wrongHintTr: 'Bu ' + ch + ' harfi. “AĞAÇ” kelimesindeki Ğ harfini seçelim.'
+            wrongHintTr: 'Bu ' + ch + ' harfi. Ağaç kelimesindeki yumuşak g harfini seçelim.'
           });
         });
       } else if (lvl.evaluator === 'match_case_review') {
@@ -321,7 +325,7 @@
             hideLabel: true,
             ariaLabel: pr + ' eşleşmesi',
             isCorrect: pi === 1,
-            wrongHintTr: 'Bu ' + pr + '. Şimdi noktalı İ / i eşleşmesini bulalım.'
+            wrongHintTr: 'Bu ' + pr.replace(' / ', ' ve ') + '. Şimdi noktalı İ ve i eşleşmesini bulalım.'
           };
         });
       } else {
@@ -370,7 +374,9 @@
         exampleTr: lvl.exampleTr,
         dialogTr: 'Lila: “' + lvl.spokenPromptTr + '”',
         instructionTr: lvl.instructionTr,
+        spokenPromptTr: lvl.spokenPromptTr || lvl.instructionTr,
         hintTr: lvl.hintTr,
+        spokenHintTr: lvl.hintTr,
         evaluator: lvl.evaluator,
         transferDestination: 'matching_slot',
         showDropTarget: false,
@@ -402,7 +408,7 @@
           labelTr: dv.tr,
           ariaLabel: dv.tr + ' (' + dv.en + ')',
           isCorrect: false,
-          wrongHintTr: 'Bu ' + dv.tr + ' (' + dv.en + '). Biz ' + lvl.targetTr + ' (' + lvl.targetEn + ') arıyoruz.'
+          wrongHintTr: 'Bu ' + dv.tr + '. Tekrar bakalım!'
         });
       });
 
@@ -417,7 +423,9 @@
         speakerId: 'milo',
         dialogTr: 'Milo: “İngilizce ‘' + lvl.targetEn + '’ kelimesini dinle ve uygun görseli seç!”',
         instructionTr: lvl.instructionTr,
+        spokenPromptTr: lvl.spokenPromptTr || lvl.instructionTr,
         hintTr: lvl.hintTr,
+        spokenHintTr: lvl.spokenHintTr || ('İpucu: ' + lvl.targetTr + ' olanı ara.'),
         wordEn: lvl.targetEn,
         wordTr: lvl.targetTr,
         approxTr: lvl.approxTr,
@@ -445,7 +453,9 @@
       speakerId: 'lila',
       dialogTr: 'Lila: “Alacakaranlık bahçesinde ışığımı takip et! ' + lvl.instructionTr + '”',
       instructionTr: lvl.instructionTr,
+      spokenPromptTr: lvl.instructionTr,
       hintTr: lvl.hintTr,
+      spokenHintTr: lvl.hintTr,
       evaluator: lvl.evaluator,
       visibleFireflies: lvl.visibleFireflies,
       pulseCount: lvl.pulseCount,
@@ -543,6 +553,24 @@
     }
   }
 
+  function playCurrentTaskAudio() {
+    if (!currentSpec) return;
+    window.MiloAudio.stopSpeech();
+    var trPrompt = currentSpec.spokenPromptTr || currentSpec.instructionTr;
+    if (currentSpec.wordEn) {
+      var targetWord = currentSpec.wordEn;
+      window.MiloAudio.speakTR(trPrompt, {
+        onEnd: function () {
+          if (currentSpec && currentSpec.wordEn === targetWord && el.coverOverlay.hidden) {
+            window.MiloAudio.speakEN(targetWord, { slow: false });
+          }
+        }
+      });
+    } else {
+      window.MiloAudio.speakTR(trPrompt);
+    }
+  }
+
   function renderCurrentTask(speakAudio) {
     failCount = 0;
     currentSpec = buildTaskSpec();
@@ -598,15 +626,7 @@
     window.MiloPhaser.loadTaskSpec(currentSpec);
 
     if (speakAudio !== false && el.coverOverlay.hidden) {
-      window.MiloAudio.stopSpeech();
-      window.MiloAudio.speakTR(currentSpec.instructionTr);
-      if (currentSpec.wordEn && state.settings.voiceOn && !window.MiloAudio.isMuted()) {
-        setTimeout(function () {
-          if (currentSpec && currentSpec.wordEn && el.coverOverlay.hidden) {
-            window.MiloAudio.speakEN(currentSpec.wordEn, { slow: false });
-          }
-        }, 1600);
-      }
+      playCurrentTaskAudio();
     }
   }
 
@@ -930,7 +950,7 @@
     el.pauseReplayBtn.addEventListener('click', function () {
       window.MiloPhaser.setPaused(false);
       window.MiloCinematics.animateModalClose(el.pauseModal);
-      if (currentSpec) window.MiloAudio.speakTR(currentSpec.instructionTr);
+      playCurrentTaskAudio();
     });
     el.pauseMapBtn.addEventListener('click', function () {
       window.MiloPhaser.setPaused(false);
@@ -945,7 +965,7 @@
 
     el.replayVoiceBtn.addEventListener('click', function () {
       window.MiloAudio.unlock();
-      if (currentSpec) window.MiloAudio.speakTR(currentSpec.instructionTr);
+      playCurrentTaskAudio();
     });
 
     el.wordPlayBtn.addEventListener('click', function () {
@@ -972,7 +992,14 @@
       if (currentSpec) {
         showToast('💡 ' + currentSpec.hintTr);
         window.MiloPhaser.highlightHint();
-        window.MiloAudio.speakTR(currentSpec.hintTr);
+        var hintSpeech = currentSpec.spokenHintTr || currentSpec.hintTr;
+        window.MiloAudio.speakTR(hintSpeech, {
+          onEnd: function () {
+            if (currentSpec && currentSpec.wordEn) {
+              window.MiloAudio.speakEN(currentSpec.wordEn, { slow: true });
+            }
+          }
+        });
       }
     });
 
@@ -1119,7 +1146,13 @@
         failCount += 1;
         var msg = customHint || (currentSpec ? currentSpec.hintTr : 'Tekrar bakalım!');
         showToast(msg);
-        window.MiloAudio.speakTR(msg);
+        window.MiloAudio.speakTR(msg, {
+          onEnd: function () {
+            if (currentSpec && currentSpec.wordEn) {
+              window.MiloAudio.speakEN(currentSpec.wordEn, { slow: false });
+            }
+          }
+        });
         if (failCount >= 2) {
           window.MiloPhaser.highlightHint();
         }
