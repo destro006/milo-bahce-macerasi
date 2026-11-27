@@ -269,9 +269,10 @@
       var g = this.add.graphics();
       this.bgContainer.add(g);
       if (sceneId === 'finale' && wc.lit) {
-        g.fillStyle(0xffe785, 0.16);
-        g.fillCircle(1080, 360, 290);
-        g.fillCircle(640, 420, 340);
+        g.fillStyle(0xffe785, 0.08);
+        g.fillCircle(1080, 340, 260);
+        g.fillStyle(0xffe785, 0.06);
+        g.fillCircle(640, 400, 340);
       }
       if (sceneId === 'stream' && wc.bridgeOpen) {
         g.fillStyle(0xb97b45, 1); g.lineStyle(3, 0x6b411e, 1);
